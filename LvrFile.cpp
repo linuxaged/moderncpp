@@ -1,4 +1,6 @@
 #include <cstdio>
+#include <cerrno>
+#include <string>
 
 class LvrFile
 {
@@ -10,9 +12,27 @@ public:
 
     size_t read(void* data, size_t element_size, size_t count);
     void write(const void* data, size_t element_size, size_t count);
+    static std::string readToString(const char* filename);
+
 private:
     FILE* file;
 };
+
+std::string LvrFile::readToString(const char *filename)
+{
+    std::FILE *fp = std::fopen(filename, "rb");
+    if (fp)
+    {
+        std::string contents;
+        std::fseek(fp, 0, SEEK_END);
+        contents.resize(std::ftell(fp));
+        std::rewind(fp);
+        std::fread(&contents[0], 1, contents.size(), fp);
+        std::fclose(fp);
+        return (contents);
+    }
+    throw (errno);
+}
 
 LvrFile::LvrFile(const char* path, const char* type)
 {
